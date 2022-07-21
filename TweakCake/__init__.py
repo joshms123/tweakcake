@@ -31,7 +31,7 @@ class Config(MutableMapping):
 	_logger = logging.getLogger(__name__)
 
 	def __init__(self, name=os.path.basename(__file__), save_on_exit=True, autosave=False, use_yaml=False,
-				 allow_includes=False, _parent=None, _data=None):
+				 allow_includes=False, _parent=None, _data=None, custom_path=None):
 		"""
 		:param name:
 			Name of the application that this config belongs to. This will be used as the name of the config directory.
@@ -43,6 +43,7 @@ class Config(MutableMapping):
 		"""
 		self._name, self._autosave, self._use_yaml = name, autosave, use_yaml
 		self._allow_includes = allow_includes
+		self._custom_path = custom_path
 		if save_on_exit and _parent is None:
 			atexit.register(self.save)
 		self._parent = _parent
@@ -61,6 +62,7 @@ class Config(MutableMapping):
 
 	@property
 	def config_files(self):
+		if self._custom_path is not None: return [os.path.join(self._custom_path, self._name + ".yml" if self._use_yaml else self._name + ".json")]
 		config_files = [
 			os.path.join(self._site_config_home, self._name, "config.yml" if self._use_yaml else "config.json"),
 			os.path.join(self._user_config_home, self._name, "config.yml" if self._use_yaml else "config.json")

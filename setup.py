@@ -3,9 +3,9 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="tweak",
+    name="tweakcake",
     version="1.0.4",
-    url="https://github.com/kislyuk/tweak",
+    url="https://github.com/tweesecake/tweakcake",
     license="Apache Software License",
     author="Andrey Kislyuk",
     author_email="kislyuk@gmail.com",
@@ -13,7 +13,7 @@ setup(
     long_description=open("README.rst").read(),
     packages=find_packages(exclude=["test"]),
     include_package_data=True,
-    platforms=["MacOS X", "Posix"],
+    platforms=["MacOS X", "Posix", "Windows"],
     test_suite="test",
     classifiers=[
         "Intended Audience :: Developers",
