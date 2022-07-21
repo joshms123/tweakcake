@@ -1,4 +1,4 @@
-tweak: Application configuration engine
+tweak: Application configuration engine with modifications made for the TweeseCake project
 =======================================
 Tweak is a Python helper class to ingest and serialize app-specific configuration.
 
