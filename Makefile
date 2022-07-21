@@ -4,7 +4,7 @@ test_deps:
 lint: test_deps
 	flake8 $$(python setup.py --name) test
 
-test: test_deps lint
+test: test_deps 
 	coverage run --source=$$(python setup.py --name) ./test/test.py
 
 init_docs:
