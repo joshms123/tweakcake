@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="tweakcake",
+    name="TweakCake",
     version="1.0.4",
     url="https://github.com/tweesecake/tweakcake",
     license="Apache Software License",
