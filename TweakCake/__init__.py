@@ -44,6 +44,7 @@ class Config(MutableMapping):
 		self._name, self._autosave, self._use_yaml = name, autosave, use_yaml
 		self._allow_includes = allow_includes
 		self._custom_path = custom_path
+		self._cf_closed = False
 		if save_on_exit and _parent is None:
 			atexit.register(self.save)
 		self._parent = _parent
@@ -215,3 +216,11 @@ class Config(MutableMapping):
 
 	def __setstate__(self, state):
 		self.__dict__ = state
+	
+	def close(self):
+		if self._cf_closed is True: return False
+		if self._parent is not None: return False
+		self._cf_closed = True
+		self.save()
+		atexit.unregister(self.save)
+		return True
