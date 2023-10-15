@@ -63,12 +63,18 @@ class Config(MutableMapping):
 
 	@property
 	def config_files(self):
-		if self._custom_path is not None: return [os.path.join(self._custom_path, self._name + ".yml" if self._use_yaml else self._name + ".json")]
+		if self._custom_path is not None:
+			return [
+				os.path.join(
+					self._custom_path,
+					f"{self._name}.yml" if self._use_yaml else f"{self._name}.json",
+				)
+			]
 		config_files = [
 			os.path.join(self._site_config_home, self._name, "config.yml" if self._use_yaml else "config.json"),
 			os.path.join(self._user_config_home, self._name, "config.yml" if self._use_yaml else "config.json")
 		]
-		config_var = self._name.upper() + "_CONFIG_FILE"
+		config_var = f"{self._name.upper()}_CONFIG_FILE"
 		if config_var in os.environ:
 			config_files.extend(os.environ[config_var].split(":"))
 		return config_files
@@ -91,7 +97,7 @@ class Config(MutableMapping):
 						for position, value in list(v.values())[0].items():
 							self[k].insert(position, value)
 					elif len(v) == 1 and list(v.keys())[0] == "$extendleft":
-						self[k][0:0] = list(v.values())[0]
+						self[k][:0] = list(v.values())[0]
 					elif len(v) == 1 and list(v.keys())[0] == "$remove":
 						self[k].remove(list(v.values())[0])
 					else:
@@ -104,17 +110,16 @@ class Config(MutableMapping):
 				self[k] = updates[k]
 
 	def _parse(self, stream):
-		if self._use_yaml:
-			import yaml
-
-			class ConfigLoader(yaml.SafeLoader):
-				def construct_mapping(loader, node):
-					loader.flatten_mapping(node)
-					return self._as_config(yaml.SafeLoader.construct_mapping(loader, node))
-			ConfigLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, ConfigLoader.construct_mapping)
-			return yaml.load(stream, Loader=ConfigLoader) or {}
-		else:
+		if not self._use_yaml:
 			return json.load(stream, object_hook=self._as_config)
+		import yaml
+
+		class ConfigLoader(yaml.SafeLoader):
+			def construct_mapping(loader, node):
+				loader.flatten_mapping(node)
+				return self._as_config(yaml.SafeLoader.construct_mapping(loader, node))
+		ConfigLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, ConfigLoader.construct_mapping)
+		return yaml.load(stream, Loader=ConfigLoader) or {}
 
 	def _load(self, stream):
 		contents = self._parse(stream)
@@ -205,8 +210,7 @@ class Config(MutableMapping):
 		del self._data[key]
 
 	def __iter__(self):
-		for item in self._data:
-			yield item
+		yield from self._data
 
 	def __len__(self):
 		return len(self._data)
