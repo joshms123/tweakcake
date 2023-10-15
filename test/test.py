@@ -28,7 +28,7 @@ class TestTweak(unittest.TestCase):
         import argparse
         parser = argparse.ArgumentParser(description=__doc__)
         for arg in "verbose quiet failfast catch buffer".split():
-            parser.add_argument("-" + arg[0], "--" + arg, nargs="?")
+            parser.add_argument(f"-{arg[0]}", f"--{arg}", nargs="?")
         parser.add_argument("--foo")
         parser.add_argument("--bar")
         args = parser.parse_args([])
@@ -111,10 +111,10 @@ class TestTweak(unittest.TestCase):
             self.assertEqual(len(config.config_files), 4)
 
     def test_include(self):
-        with tempfile.NamedTemporaryFile("w") as cf1, tempfile.NamedTemporaryFile("w") as cf2:
+        with (tempfile.NamedTemporaryFile("w") as cf1, tempfile.NamedTemporaryFile("w") as cf2):
             json.dump(dict(x="foo", y="bar", z={}), cf1)
             cf1.flush()
-            incl_expr = os.path.basename(cf1.name) + "*"
+            incl_expr = f"{os.path.basename(cf1.name)}*"
             json.dump(dict(x=list(range(8)), z={None: None}, t=4.5, include=incl_expr), cf2)
             cf2.flush()
             os.environ["TWEAK_TEST_CONFIG_FILE"] = cf2.name
