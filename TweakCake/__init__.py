@@ -84,6 +84,9 @@ class Config(MutableMapping):
 		if self._autosave:
 			self.save()
 
+	def get(self, key, default=None):
+		return self._data.get(key, default)
+
 	def __getattr__(self, name):
 		try:
 			return self[name]
