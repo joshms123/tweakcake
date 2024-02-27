@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import os, json, errno, tempfile, shutil, logging, atexit, sys
 from collections.abc import MutableMapping
 
@@ -18,10 +16,21 @@ class Config(MutableMapping):
 			self._data = {}
 			if _parent is None:  # Load config if this is the top-level object
 				self._load_config()
+				# Convert all nested dictionaries to Config instances
+				self._data = self._convert_to_config(self._data)._data
 				if save_on_exit:
 					atexit.register(self.save)
 		else:
 			self._data = _data
+
+	def _convert_to_config(self, data, parent=None):
+		if isinstance(data, MutableMapping):
+			nested_config = Config(name=self._name, autosave=self._autosave, _parent=parent or self, _data={}, custom_path=self._custom_path)
+			for key, value in data.items():
+				nested_config[key] = self._convert_to_config(value, parent=nested_config)
+			return nested_config
+		else:
+			return data
 
 	def _load_config(self):
 		for config_file in self.config_files:
@@ -62,13 +71,8 @@ class Config(MutableMapping):
 			os.chmod(config_file, mode)
 			self._logger.info(f"Configuration saved to {config_file}")
 
-	def _as_config(self, value):
-		if isinstance(value, MutableMapping):
-			return Config(name=self._name, autosave=self._autosave, _parent=self, _data=value, custom_path=self._custom_path)
-		return value
-
 	def __getitem__(self, key):
-		return self._as_config(self._data[key])
+		return self._data[key]
 
 	def __setitem__(self, key, value):
 		self._data[key] = value
@@ -90,7 +94,7 @@ class Config(MutableMapping):
 		if name.startswith("_"):
 			super(Config, self).__setattr__(name, value)
 		else:
-			self[name] = self._as_config(value)
+			self[name] = value
 
 	def __delattr__(self, name):
 		if name.startswith("_"):
