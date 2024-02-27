@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="TweakCake",
-    version="1.0.4.1",
+    version="1.0.4.2",
     url="https://github.com/tweesecake/tweakcake",
     license="Apache Software License",
     author="Andrey Kislyuk",
