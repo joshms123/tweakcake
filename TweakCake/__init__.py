@@ -75,6 +75,8 @@ class Config(MutableMapping):
 		return self._data[key]
 
 	def __setitem__(self, key, value):
+		if isinstance(value, MutableMapping):
+			value = Config(name=self._name, autosave=self._autosave, _parent=self, _data=dict(value), custom_path=self._custom_path)
 		self._data[key] = value
 		if self._autosave:
 			self.save()
