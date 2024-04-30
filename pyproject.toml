@@ -1,6 +1,6 @@
 [tool.poetry]
-name = "tweakcake"
-version = "2.0.0"
+name = "TweakCake"
+version = "2.0.1"
 description = "Application configuration engine"
 license="Apache Software License"
 authors = ["Andrey Kislyuk <kislyuk@gmail.com>", "Josh S <dev@joshms.net>"]
