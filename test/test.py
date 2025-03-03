@@ -7,7 +7,7 @@ import os, sys, unittest, tempfile, json, logging, pickle
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from TweakCake import Config  # noqa
+from tweakcake import Config  # noqa
 
 
 class TestTweak(unittest.TestCase):
