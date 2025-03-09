@@ -46,11 +46,12 @@ class ConfigTemplate(Config):
 		else:
 			super().__setitem__(key, value)
 
-	def get_config_options(self):
+	@classmethod
+	def get_config_options(cls):
 		options = []
 		# Iterate over attributes of the class to find ConfigOption instances.
-		for attr_name in dir(self.__class__):
-			attr = getattr(self.__class__, attr_name)
+		for attr_name in dir(cls):
+			attr = getattr(cls, attr_name)
 			if isinstance(attr, ConfigOption):
 				options.append(attr)
 		return options
