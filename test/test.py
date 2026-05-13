@@ -126,5 +126,52 @@ class TestTweak(unittest.TestCase):
             self.assertEqual(len(config.config_files), 3)
 
 
+class TestPickling(unittest.TestCase):
+    """Regression tests for pickle round-trip support.
+
+    Config wraps any dict assigned via __setitem__ in a Config instance.
+    When such a wrapper crosses a multiprocessing.Queue, ForkingPickler
+    pickles+unpickles it; without __setstate__ defined, the unpickle path
+    triggers __getattr__('__setstate__') -> self[name] -> self._data,
+    but _data hasn't been restored yet on the new instance and the
+    __getattr__ fallback re-fires -> RecursionError.
+    """
+
+    def test_pickle_round_trip_preserves_data(self):
+        cfg = Config(name="pickle_test", save_on_exit=False)
+        cfg["a"] = 1
+        cfg["b"] = "two"
+        roundtripped = pickle.loads(pickle.dumps(cfg))
+        self.assertEqual(roundtripped["a"], 1)
+        self.assertEqual(roundtripped["b"], "two")
+
+    def test_pickle_round_trip_with_nested_dict(self):
+        cfg = Config(name="pickle_test", save_on_exit=False)
+        cfg["favorites"] = {"reading": ["light.kitchen"]}
+        roundtripped = pickle.loads(pickle.dumps(cfg))
+        inner = roundtripped["favorites"]
+        self.assertEqual(inner["reading"], ["light.kitchen"])
+
+    def test_pickle_wrapped_config_directly(self):
+        # The crash in the field was unpickling the wrapped Config that
+        # __setitem__ produced for a nested dict, not the outer Config.
+        cfg = Config(name="pickle_test", save_on_exit=False)
+        cfg["favorites"] = {"Office": []}
+        wrapped = cfg._data["favorites"]
+        self.assertIsInstance(wrapped, Config)
+        roundtripped = pickle.loads(pickle.dumps(wrapped))
+        self.assertEqual(dict(roundtripped), {"Office": []})
+
+    def test_dunder_lookup_does_not_recurse(self):
+        # Probe a few dunder names on a freshly-constructed-via-__new__
+        # instance (mirrors what pickle does before __dict__ is restored).
+        empty = Config.__new__(Config)
+        self.assertFalse(hasattr(empty, "__setstate__") and "_data" in empty.__dict__)
+        # The hasattr above must terminate; before the fix it recursed.
+        # Also verify direct getattr for various dunder probes used by pickle:
+        for name in ("__reduce_ex__", "__reduce__", "__getstate__", "__setstate__"):
+            getattr(empty, name, None)  # must not raise RecursionError
+
+
 if __name__ == '__main__':
     unittest.main()

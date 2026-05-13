@@ -90,10 +90,24 @@ class Config(MutableMapping):
 		return self._data.get(key, default)
 
 	def __getattr__(self, name):
+		# Pickle (and copy, deepcopy) probe for dunder protocol methods via
+		# getattr before __dict__ is restored on the new instance. Without
+		# this short-circuit, those probes recurse infinitely through
+		# self["__setstate__"] -> Config.__getitem__ -> self._data, where
+		# _data hasn't been set yet and so re-triggers __getattr__("_data").
+		# Dunder attrs are never legitimate config keys, so refuse them.
+		if name.startswith("__") and name.endswith("__"):
+			raise AttributeError(name)
 		try:
 			return self[name]
 		except KeyError:
 			raise AttributeError(f"'Config' object has no attribute '{name}'")
+
+	def __getstate__(self):
+		return self.__dict__
+
+	def __setstate__(self, state):
+		self.__dict__.update(state)
 
 	def __setattr__(self, name, value):
 		if name.startswith("_"):
